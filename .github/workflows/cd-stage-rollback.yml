@@ -3,6 +3,9 @@ name: 'Stage: rollback'
 on:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   rollback-stage:
     runs-on: ubuntu-latest
