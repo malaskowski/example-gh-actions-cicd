@@ -10,6 +10,9 @@ permissions:
   id-token: write
   contents: write
 
+concurrency:
+  group: stage-guard
+
 jobs:
   create_tag:
     uses: ./.github/workflows/tag-and-version.yml
