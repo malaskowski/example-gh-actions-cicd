@@ -16,5 +16,3 @@ NEW_TAG="${VERSION_MAJOR_MINOR}.${VERSION_PATCH}"
 echo "Generated new tag: $NEW_TAG"
 echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 echo "NEW_TAG=$NEW_TAG" >> $GITHUB_OUTPUT
-# set NEW_TAG and make it available outside the script
-echo "::set-output name=new_tag::$NEW_TAG"

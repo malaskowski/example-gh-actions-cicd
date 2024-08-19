@@ -19,3 +19,4 @@ jobs:
     secrets: inherit
     with:
       namespace: ${{ needs.calculate-namespace.outputs.namespace }}
+      eks_cluster: ${{ vars.AWS_EKS_DEV_CLUSTER_NAME }}
