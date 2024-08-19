@@ -1,0 +1,50 @@
+# Reusable workflow for building and pushing Docker images to ECR
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: 'Directory containing Dockerfile'
+        required: true
+        type: string
+      tag:
+        description: 'Docker image tag'
+        required: true
+        type: string
+      mode:
+        description: 'Build mode: test or release'
+        required: true
+        default: 'test'
+        type: string
+    outputs:
+      full_image:
+        description: 'Full Docker image name'
+        value: ${{ jobs.build-and-push.outputs.full_image }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      full_image: ${{ steps.build.outputs.full_image }}
+    env:
+      ECR_REGISTRY: https://ecr-registry-address
+      ECR_REPOSITORY: acme/${{ inputs.directory }}
+      IMAGE_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and push image to Amazon ECR
+        id: build
+        shell: bash
+        env:
+          REGISTRY_POSTFIX: ${{ inputs.mode == 'test' && '-test' || '' }}
+        run: |
+          FULL_IMAGE_URL=$ECR_REGISTRY$REGISTRY_POSTFIX/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "Building Docker image: $FULL_IMAGE_URL"
+          echo "full_image=$FULL_IMAGE_URL" >> $GITHUB_OUTPUT
+          echo "FULL_IMAGE_URL=$FULL_IMAGE_URL" >> $GITHUB_ENV
+          
+      - name: Push Docker image to release Amazon ECR
+        run: |
+          echo "Pushing Docker image: $FULL_IMAGE_URL"
+          echo "Push complete"

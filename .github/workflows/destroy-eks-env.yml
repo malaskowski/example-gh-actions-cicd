@@ -1,0 +1,27 @@
+# Reusable workflow that will delete namespace and resources in EKS environment associated with git branch
+
+on:
+  workflow_call:
+    inputs:
+      eks_cluster: 
+        description: 'EKS cluster name'
+        type: string
+        default: 'test-cluster'
+      eks_region:
+        description: 'AWS region of EKS cluster'
+        type: string
+        default: 'us-west-2'
+      namespace:
+        description: 'Kubernetes namespace to destroy'
+        required: true
+        type: string
+  
+jobs:
+  destroy-enviroment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Destroy EKS environment
+        run: |
+          echo "Destroying EKS environment in cluster: ${{ inputs.eks_cluster }} in region: ${{ inputs.eks_region }}"
+          echo "Destroying namespace: ${{ inputs.namespace }}"

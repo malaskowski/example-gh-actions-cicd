@@ -1,0 +1,39 @@
+name: 'Ephemeral: deploy EKS environment'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-webapp:
+    uses: ./.github/workflows/build-and-push.yml
+    secrets: inherit
+    with:
+      directory: webapp
+      tag: ${{ github.sha }}
+      mode: test
+
+  build-api-server:
+    uses: ./.github/workflows/build-and-push.yml
+    secrets: inherit
+    with:
+      directory: api-server
+      tag: ${{ github.sha }}
+      mode: test
+
+  calculate-namespace:
+    runs-on: ubuntu-latest
+    outputs:
+      namespace: ${{ steps.set-namespace.outputs.NAMESPACE_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-namespace
+        run: .github/scripts/calculate-namespace-name-form-branch.sh
+
+  deploy-to-dev:
+    needs: [build-webapp, build-api-server, calculate-namespace]
+    uses: ./.github/workflows/deploy-and-test.yml
+    secrets: inherit
+    with:
+      webapp_image: ${{ needs.build-webapp.outputs.full_image }}
+      api_server_image: ${{ needs.build-api-server.outputs.full_image }}
+      namespace: ${{ needs.calculate-namespace.outputs.namespace }}

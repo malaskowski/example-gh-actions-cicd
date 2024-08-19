@@ -1,0 +1,47 @@
+# Reusable workflow for deploying application and running smoke tests in EKS environment
+
+on:
+  workflow_call:
+    inputs:
+      eks_cluster: 
+        description: 'EKS cluster name'
+        type: string
+        default: 'test-cluster'
+      eks_region:
+        description: 'AWS region of EKS cluster'
+        type: string
+        default: 'us-west-2'
+      webapp_image:
+        description: 'Which webapp image to deploy'
+        required: true
+        type: string
+      api_server_image:
+        description: 'Which API server image to deploy'
+        required: true
+        type: string
+      namespace:
+        description: 'Kubernetes namespace to deploy application'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # make sure this is idempotent action and can upgrade existing resources
+      - name: Deploy application to EKS
+        run: |
+          echo "Deploying application to EKS cluster: ${{ inputs.eks_cluster }} in region: ${{ inputs.eks_region }}"
+          echo "Deploying: ${{ inputs.webapp_image }} and ${{ inputs.api_server_image }}"
+          echo "Deploying to namespace: ${{ inputs.namespace }}"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on deployed application at: https://${{ inputs.namespace }}.example.com"
+          echo "Smoke tests complete"

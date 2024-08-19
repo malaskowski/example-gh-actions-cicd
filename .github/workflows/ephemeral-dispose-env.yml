@@ -1,0 +1,21 @@
+name: 'Ephemeral: dispose EKS environment'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  calculate-namespace:
+    runs-on: ubuntu-latest
+    outputs:
+      namespace: ${{ steps.set-namespace.outputs.NAMESPACE_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-namespace
+        run: .github/scripts/calculate-namespace-name-form-branch.sh
+
+  destroy:
+    needs: [calculate-namespace]
+    uses: ./.github/workflows/destroy-eks-env.yml
+    secrets: inherit
+    with:
+      namespace: ${{ needs.calculate-namespace.outputs.namespace }}

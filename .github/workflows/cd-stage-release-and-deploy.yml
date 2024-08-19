@@ -1,0 +1,60 @@
+name: 'Stage: release and deploy'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  create_tag:
+    uses: ./.github/workflows/tag-and-version.yml
+    secrets: inherit
+    
+  release-webapp:
+    uses: ./.github/workflows/build-and-push.yml
+    needs: create_tag
+    secrets: inherit
+    with:
+      directory: webapp
+      tag: ${{ needs.create_tag.outputs.new_tag }}
+      mode: release
+
+  release-api-server:
+    uses: ./.github/workflows/build-and-push.yml
+    needs: create_tag
+    secrets: inherit
+    with:
+      directory: api-server
+      tag: ${{ needs.create_tag.outputs.new_tag }}
+      mode: release
+
+  deploy-to-dev:
+    needs: [create_tag, release-webapp, release-api-server]
+    uses: ./.github/workflows/deploy-and-test.yml
+    secrets: inherit
+    with:
+      webapp_image: ${{ needs.release-webapp.outputs.full_image }}
+      api_server_image: ${{ needs.release-api-server.outputs.full_image }}
+      namespace: dev
+
+  deploy-to-stage:
+    needs: [create_tag, deploy-to-dev, release-webapp, release-api-server]
+    uses: ./.github/workflows/deploy-and-test.yml
+    secrets: inherit
+    with:
+      webapp_image: ${{ needs.release-webapp.outputs.full_image }}
+      api_server_image: ${{ needs.release-api-server.outputs.full_image }}
+      namespace: stage
+
+  destroy-dev:
+    needs: [deploy-to-dev]
+    uses: ./.github/workflows/destroy-eks-env.yml
+    if: always()
+    secrets: inherit
+    with:
+      namespace: dev

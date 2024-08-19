@@ -1,0 +1,15 @@
+name: 'Stage: rollback'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rollback-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rollback application in stage
+        run: |
+          echo "Rolling back application in stage"
+          echo "Rolling back to previous tag"
+          echo "Rollback complete"

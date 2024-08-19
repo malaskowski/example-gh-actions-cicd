@@ -1,0 +1,33 @@
+# Reusable workflow that will calculate the version and create a tag
+
+on:
+  workflow_call:
+    outputs:
+      new_tag: 
+        description: 'Created tag'
+        value: ${{ jobs.create-tag.outputs.new_tag }}
+  
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    outputs:
+      new_tag: ${{ steps.calculate-tag.outputs.NEW_TAG }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: calculate-tag
+        run: |
+          .github/scripts/calculate-next-tag.sh
+          echo "gh-output-start"
+          cat $GITHUB_OUTPUT
+          echo "gh-output-end"
+
+      - name: push git tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
