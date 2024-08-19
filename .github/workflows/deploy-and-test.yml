@@ -29,6 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # - name: Configure AWS Credentials with OIDC
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+      #     aws-region: ${{ inputs.eks_region }} 
+
       # make sure this is idempotent action and can upgrade existing resources
       - name: Deploy application to EKS
         run: |

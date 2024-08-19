@@ -41,6 +41,7 @@ jobs:
       webapp_image: ${{ needs.release-webapp.outputs.full_image }}
       api_server_image: ${{ needs.release-api-server.outputs.full_image }}
       namespace: dev
+      eks_cluster: ${{ vars.AWS_EKS_DEV_CLUSTER_NAME }}
 
   deploy-to-stage:
     needs: [create_tag, deploy-to-dev, release-webapp, release-api-server]
@@ -50,6 +51,7 @@ jobs:
       webapp_image: ${{ needs.release-webapp.outputs.full_image }}
       api_server_image: ${{ needs.release-api-server.outputs.full_image }}
       namespace: stage
+      eks_cluster: ${{ vars.AWS_EKS_STAGE_CLUSTER_NAME }}
 
   destroy-dev:
     needs: [deploy-to-dev]
@@ -58,3 +60,4 @@ jobs:
     secrets: inherit
     with:
       namespace: dev
+      eks_cluster: ${{ vars.AWS_EKS_DEV_CLUSTER_NAME }}

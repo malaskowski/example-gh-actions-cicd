@@ -16,6 +16,10 @@ on:
         required: true
         default: 'test'
         type: string
+      eks_region:
+        description: 'AWS region of EKS cluster'
+        type: string
+        default: 'us-west-2'
     outputs:
       full_image:
         description: 'Full Docker image name'
@@ -32,6 +36,12 @@ jobs:
       IMAGE_TAG: ${{ inputs.tag }}
     steps:
       - uses: actions/checkout@v4
+
+      # - name: Configure AWS Credentials with OIDC
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-role
+      #     aws-region: ${{ inputs.eks_region }}
 
       - name: Build and push image to Amazon ECR
         id: build
